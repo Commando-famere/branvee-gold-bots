@@ -1,7 +1,6 @@
 """
-BRANVEE GOLD SIGNAL BOT
+BRANVEE GOLD SIGNAL BOT - Railway Version
 """
-
 import logging
 from telegram import Update
 from telegram.ext import (
@@ -16,10 +15,12 @@ from telegram.ext import (
 import sys
 import os
 
-# Add current directory to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add paths for Railway
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Now import from handlers
+from config import BOT_TOKEN
+from database import init_db
+
 from handlers.auth import (
     EMAIL, TOKEN,
     start_command,
@@ -31,24 +32,24 @@ from handlers.menu import menu_callback
 from handlers.signal import signal_callback
 from handlers.strategy import strategy_callback
 
-# Add parent directory for database imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from config import BOT_TOKEN
-from database import init_db
-
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 
 def main():
     """Start bot"""
+    # Initialize database
     try:
         init_db()
         print("✅ Database connected")
     except Exception as e:
         print(f"⚠️ Database warning: {e}")
     
+    # Create application
     app = Application.builder().token(BOT_TOKEN).build()
     
+    # Email + Token authentication
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start_command)],
         states={
@@ -60,12 +61,13 @@ def main():
     )
     app.add_handler(conv_handler)
     
+    # Menu navigation
     app.add_handler(CallbackQueryHandler(menu_callback, pattern='^menu_'))
     app.add_handler(CallbackQueryHandler(signal_callback, pattern='^get_signal$'))
     app.add_handler(CallbackQueryHandler(strategy_callback, pattern='^strategy_'))
     
     print("\n" + "="*50)
-    print("🤖 BRANVEE SIGNAL BOT")
+    print("🤖 BRANVEE SIGNAL BOT - RAILWAY")
     print("="*50)
     print("✅ Bot is running...")
     print("="*50 + "\n")
